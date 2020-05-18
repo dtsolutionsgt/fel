@@ -19,14 +19,20 @@ import org.json.JSONObject;
 
 public class MainActivity extends PBase {
 
-    private String fileName= Environment.getExternalStorageDirectory() + "/zzxmltest.xml";
-    private String jsonName= Environment.getExternalStorageDirectory() + "/zzxmltest.txt";
+    //private String fileName= Environment.getExternalStorageDirectory() + "/zzxmltest.xml";
+    //private String jsonName= Environment.getExternalStorageDirectory() + "/zzxmltest.txt";
 
     private clsFELInFile fel;
 
+    private String  uuid;
+    private long fecha;
+
+    /*
     private JSONObject jsonf = new JSONObject();
     private JSONObject jsonc = new JSONObject();
     private JSONObject jsona = new JSONObject();
+
+
 
     private String s64, jsfirm,jscert,jsanul,firma;
 
@@ -37,13 +43,16 @@ public class MainActivity extends PBase {
     private String fel_token ="5b174fb0e23645b65ef88277d654603d";
     private String fel_codigo="0";
     private String fel_alias="DEMO_FEL";
-    private String fel_ident="abc128"; // cambiar por cada documento
+    private String fel_ident="a00001"; // cambiar por cada documento
 
     private String fel_uuid="94564CED-39CD-477C-BB12-3E58912823E9";
 
     private String WSURL="https://signer-emisores.feel.com.gt/sign_solicitud_firmas/firma_xml";
     private String WSURLCert="https://certificador.feel.com.gt/fel/certificacion/dte/";
     private String WSURLAnul="https://certificador.feel.com.gt/fel/anulacion/dte/";
+
+
+     */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,22 +62,29 @@ public class MainActivity extends PBase {
         super.InitBase();
 
         fel=new clsFELInFile(this,this);
+        fecha=du.getActDateTime();
     }
 
     public void doCert(View view) {
         toastlong("Procesando factura electronica\nEspere, por favor . . .");
         buildFactXML();
+        fel.certificacion();
     }
 
     public void doAnul(View view) {
+
+        //buildFactXML();
         buildAnulXML();
-        sendJSONAnul();
+        fel.anulacion(uuid);
+        //buildAnulXML();
+        //sendJSONAnul();
     }
 
     @Override
     public void felCallBack() throws Exception {
          if (!fel.errorflag) {
-            toast("Factura electronica certificada.");
+            uuid=fel.fact_uuid;
+            toast("Proceso completo.\n"+uuid);
         } else {
             toast("Ocurrio error en FEL :\n\n"+ fel.error);
         }
@@ -76,7 +92,7 @@ public class MainActivity extends PBase {
 
     private void buildFactXML() {
         try {
-            fel.iniciar(2005141102);
+            fel.iniciar(fecha);
             fel.emisor("GEN","1","","1000000000K","DEMO");
             fel.emisorDireccion("Direccion","GUATEMALA","GUATEMALA","GT");
             fel.receptor("CF","Consumidor Final","Ciudad");
@@ -86,7 +102,7 @@ public class MainActivity extends PBase {
 
             fel.completar("ZR37-46");
 
-            fel.certificacion();
+
         } catch (Exception e) {
             msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
         }
@@ -94,14 +110,14 @@ public class MainActivity extends PBase {
 
     private void buildAnulXML() {
         try {
-             fel.anulfact("A16B83DB-5FA0-4C31-8F49-BC0465BD05DE","1000000000K","76365204",2005151636,2005151636);
-            //fel.anulfact("A16B83DB-5FA0-4C31-8F49-BC0465BD05DE","1000000000K","76365204",2005151530,2005151530);
-            //fel.anulfact("DB93AF6F-87A6-4BA6-A22A-01873CC93776","1000000000K","CF",1906100858,1906100858);
+            fel.anulfact(uuid,"1000000000K","76365204",fecha,du.getActDateTime());
+            //fel.anulfact("A16B83DB-5FA0-4C31-8F49-BC0465BD05DE","1000000000K","76365204",2005151636,2005151636);
         } catch (Exception e) {
             msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
         }
     }
 
+    /*
     //region Anulacion
 
     public void sendJSONAnul() {
@@ -225,5 +241,5 @@ public class MainActivity extends PBase {
     }
 
     //endregion
-
+    */
 }
